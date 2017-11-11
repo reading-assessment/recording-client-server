@@ -67,27 +67,30 @@
     * It only stops when the method stopRecording is triggered.
     */
     function startRecording() {
-      // Access the Microphone using the navigator.getUserMedia method to obtain a stream
-      navigator.getUserMedia({ audio: true }, function (stream) {
-      // Expose the stream to be accessible globally
-      audio_stream = stream;
-      // Create the MediaStreamSource for the Recorder library
-      var input = audio_context.createMediaStreamSource(stream);
-      console.log('Media stream succesfully created');
+      var constraints = {audio:true, video:false};
+      // Access the Microphone using the navigator.mediaDevices.getUserMedia method to obtain a stream
+      navigator.mediaDevices.getUserMedia(constraints)
+      .then(function(stream){
+        // Expose the stream to be accessible globally
+        audio_stream = stream;
+        // Create the MediaStreamSource for the Recorder library
+        var input = audio_context.createMediaStreamSource(stream);
+        console.log('Media stream succesfully created');
 
-      // Initialize the Recorder Library
-      recorder = new Recorder(input);
-      console.log('Recorder initialised');
+        // Initialize the Recorder Library
+        recorder = new Recorder(input);
+        console.log('Recorder initialised');
 
-      // Start recording !
-      recorder && recorder.record();
-      console.log('Recording...');
+        // Start recording !
+        recorder && recorder.record();
+        console.log('Recording...');
 
-      // Disable Record button and enable stop button !
-      document.getElementById("start-btn").disabled = true;
-      document.getElementById("stop-btn").disabled = false;
-      }, function (e) {
-        console.error('No live audio input: ' + e);
+        // Disable Record button and enable stop button !
+        document.getElementById("start-btn").disabled = true;
+        document.getElementById("stop-btn").disabled = false;
+      })
+      .catch(function(err) {
+        /* handle the error */
       });
     }
 
@@ -166,7 +169,7 @@
           blobStream.on('data', function(chunk){
             size += chunk.length;
             progressBar.setAttribute('value', String(size / AudioBLOB.size * 100));
-            console.log(Math.floor(size / AudioBLOB.size * 100) + '%');
+            // console.log(Math.floor(size / AudioBLOB.size * 100) + '%');
           });
           blobStream.pipe(socketioStream);
 
