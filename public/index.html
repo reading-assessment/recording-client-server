@@ -35,9 +35,9 @@
 
   <script>
     // Expose globally your audio_context, the recorder instance and audio_stream
-    var audio_context;
-    var recorder;
-    var audio_stream;
+    var audio_context; //HTML5 AudioContext
+    var recorder; // Instance of custom library recorder.gs
+    var audio_stream; // Stream of audio - HTML5
 
     /**
     * Patch the APIs for every browser that supports them and check
@@ -52,7 +52,7 @@
         window.URL = window.URL || window.webkitURL;
 
         // Store the instance of AudioContext globally
-        audio_context = new AudioContext;
+        audio_context = new AudioContext; //HTML5
         console.log('Audio context is ready !');
         console.log('navigator.getUserMedia ' + (navigator.getUserMedia ? 'available.' : 'not present!'));
       } catch (e) {
@@ -68,7 +68,7 @@
     */
     function startRecording() {
       var constraints = {audio:true, video:false};
-      // Access the Microphone using the navigator.mediaDevices.getUserMedia method to obtain a stream
+      // Access the Microphone using the navigator.mediaDevices.getUserMedia method to obtain a stream, HMTL5
       navigator.mediaDevices.getUserMedia(constraints)
       .then(function(stream){
         // Expose the stream to be accessible globally
@@ -77,7 +77,7 @@
         var input = audio_context.createMediaStreamSource(stream);
         console.log('Media stream succesfully created');
 
-        // Initialize the Recorder Library
+        // Initialize the Recorder Library (custom)
         recorder = new Recorder(input);
         console.log('Recorder initialised');
 
@@ -106,6 +106,7 @@
       console.log('Stopped recording.');
 
       // Stop the getUserMedia Audio Stream !
+      // HTML5
       audio_stream.getAudioTracks()[0].stop();
 
       // Disable Stop button and enable Record button !
@@ -121,6 +122,7 @@
       * Note that this method exports too with mp3 if
       * you provide the second argument of the function
       */
+      // Custom library
         recorder && recorder.exportWAV(function (blob) {
           callback(blob);
 
@@ -147,20 +149,24 @@
       document.getElementById("stop-btn").addEventListener("click", function(){
         // Use wav format
         var _AudioFormat = "audio/mpeg";
-        // You can use mp3 to using the correct mimetype
+        // You can use mp3 to using the correct mimetype ->JOHN -> No, you can't
         //var AudioFormat = "audio/mpeg";
 
         stopRecording(function(AudioBLOB){
           // Note:
           // Use the AudioBLOB for whatever you need, to download
           // directly in the browser, to upload to the server, you name it !
+          // AudioBLOB variable contains the actual wav file
 
           // In this case we are going to add an Audio item to the list so you
           // can play every stored Audio
 
           // ----------------JOHN CODE----------------------------
+          // Sockets.io and socketio-stream code
           var URL_SERVER = 'https://localhost:9005';
+          // io is a globally available variable from socketio cdn that is imported
           var socket = io.connect(URL_SERVER);
+          // ss is socketio-stream globally available variable from imported file
           var socketioStream = ss.createStream();
           ss(socket).emit('client-stream-request', socketioStream, {size: AudioBLOB.size});
           var blobStream = ss.createBlobReadStream(AudioBLOB);
@@ -171,11 +177,17 @@
             progressBar.setAttribute('value', String(size / AudioBLOB.size * 100));
             // console.log(Math.floor(size / AudioBLOB.size * 100) + '%');
           });
+          socket.on('stream-server-ended', () =>{
+            console.log('endddddd');
+            //socket.disconnect(URL_SERVER);
+          });
           blobStream.pipe(socketioStream);
-
+          // socket.disconnect(URL_SERVER);
+          // code before the progress bar
           // ss.createBlobReadStream(AudioBLOB).pipe(socketioStream);
           // -----------------------------------------------------
 
+          //------Append wav file to li item and make it available in HTML5 audio player
           var url = URL.createObjectURL(AudioBLOB);
           var li = document.createElement('li');
           var au = document.createElement('audio');
