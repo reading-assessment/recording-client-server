@@ -24,6 +24,13 @@ var options = {
   cert: fs.readFileSync('./thesis-selfsignedcrt.pem')
 };
 
+// ---------------ARCHITECTURE---------------------
+// this server listens to requests from client and receives client wav file along with client metadata
+// for getting and sending the wav file it requires socketio-stream
+// it converts the wav file to flac and passes it to the file-to-text server
+// so it requires shell to run flac in the command line
+// it then gets back the transrcibed text
+
 var serverPort = 9005;
 
 var server = https.createServer(options, app);
@@ -31,10 +38,8 @@ var server = https.createServer(options, app);
 //socket.io requirement and initialization
 var io = require('socket.io')(server);
 
-app.use(express.static(__dirname + '/public'));
-
-
 io.on('connection', function(socket){
+  
   console.log('new connection');
   // socket.io-stream event listening from the client
   ss(socket).on('client-stream-request', function(stream, size){
