@@ -24,6 +24,8 @@
     feedback!
   </p>
 
+  <input type="text" placeholder="name" required id="btnStudentName"/>
+
   <!-- Draw the action buttons -->
   <button id="start-btn">Start recording</button>
   <button id="stop-btn" disabled>Stop recording</button>
@@ -168,7 +170,10 @@
           var socket = io.connect(URL_SERVER);
           // ss is socketio-stream globally available variable from imported file
           var socketioStream = ss.createStream();
-          ss(socket).emit('client-stream-request', socketioStream, {size: AudioBLOB.size});
+          ss(socket).emit('client-stream-request', socketioStream, {
+            size: AudioBLOB.size,
+            studentName : document.getElementById('btnStudentName').value
+          });
           var blobStream = ss.createBlobReadStream(AudioBLOB);
           var size = 0;
           var progressBar = document.getElementsByTagName('progress')[0];

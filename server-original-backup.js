@@ -37,8 +37,7 @@ app.use(express.static(__dirname + '/public'));
 io.on('connection', function(socket){
   console.log('new connection');
   // socket.io-stream event listening from the client
-  ss(socket).on('client-stream-request', function(stream, objMetaData){
-    console.log(objMetaData);
+  ss(socket).on('client-stream-request', function(stream, size){
     // node filestream to save file on server filesystem
     var writeStream = fs.createWriteStream('test.wav');
     stream.pipe(writeStream);
