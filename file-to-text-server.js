@@ -22,8 +22,6 @@ var options = {
   cert: fs.readFileSync('./thesis-selfsignedcrt.pem')
 };
 
-// app.use(express.static(__dirname + '/public'));
-
 var serverPort = 9006;
 
 var server = https.createServer(options, app);
@@ -33,14 +31,14 @@ var io = require('socket.io')(server);
 
 io.on('connection', function(socket){
   console.log('new connection');
-  // socket.io-stream event listening from the client
+  // socket.io-stream event listening from the app-server
   ss(socket).on('appserver-stream-request', function(stream, fileNameFLACObj){
     const filePathFLAC = `./files_for_text/${fileNameFLACObj.fileNameFLAC}`;
     // node filestream to save file on server filesystem
     console.log(filePathFLAC);
     var writeStream = fs.createWriteStream(filePathFLAC);
     stream.pipe(writeStream);
-    // when file is completed
+    // when flac file has completely arrived form app-server
     stream.on('end', ()=>{
       socket.emit('textserver-flac-upload-completed');
       // get a reference through the default google bucket of firebase app
@@ -52,7 +50,12 @@ io.on('connection', function(socket){
         var bucketURI = `gs://benkyohr-e00dc.appspot.com/${fileNameFLACObj.fileNameFLAC}`;
         // call the function that gets back the text from the flac file on the google bucket
         asyncRecognizeGCS(bucketURI, 'FLAC', 16000, 'en-US', function(transcribedText){
-          socket.emit('textserver-transcribebtext', {transcribedText});
+          socket.emit('textserver-transcribebtext', {transcribedText}, (confirmation) =>{
+            if (confirmation) {
+              socket.disconnect();
+            }
+            console.log(confirmation);
+          });
         });
       })
       .catch(function(err){
