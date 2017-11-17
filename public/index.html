@@ -187,6 +187,10 @@
           ss(socket).emit('client-stream-request', socketioStream, {
             wavFileSize: AudioBLOB.size,
             studentName : document.getElementById('btnStudentName').value
+          }, (confirmation) =>{
+            console.log(confirmation);
+            socket.disconnect(URL_SERVER);
+            document.getElementById('div-finished-message').innerHTML = 'FINISHED :)';
           });
           var blobStream = ss.createBlobReadStream(AudioBLOB);
           var size = 0;
@@ -195,11 +199,6 @@
             size += chunk.length;
             progressBar.setAttribute('value', String(size / AudioBLOB.size * 100));
             // console.log(Math.floor(size / AudioBLOB.size * 100) + '%');
-          });
-          socket.on('stream-server-ended', () =>{
-            console.log('endddddd');
-            document.getElementById('div-finished-message').innerHTML = 'FINISHED :)'
-            //socket.disconnect(URL_SERVER);
           });
           blobStream.pipe(socketioStream);
           // socket.disconnect(URL_SERVER);

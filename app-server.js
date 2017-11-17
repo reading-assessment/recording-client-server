@@ -42,7 +42,7 @@ ioAsServer.on('connection', function(socketAsServer){
   
   console.log('new connection');
   // socket.io-stream event listening from the client
-  ss(socketAsServer).on('client-stream-request', function(stream, objMetaData){
+  ss(socketAsServer).on('client-stream-request', function(stream, objMetaData, aknowledgeFn){
     // node filestream to save file on server filesystem
     var d = new Date();
     const filePrefix = objMetaData.studentName + 'TT' + d.getTime();
@@ -55,9 +55,10 @@ ioAsServer.on('connection', function(socketAsServer){
     //console.log(fileName);
     var writeStream = fs.createWriteStream(filePathWAV);
     stream.pipe(writeStream);
-    // when file is completed
+    // when stream of file is completed
     stream.on('end', ()=>{
-      socketAsServer.emit('stream-server-ended');
+      // close the client stream by calling the aknowledge function, see code on index.html
+      aknowledgeFn(true);
       // turn the wav file on file system to flac file
       shell.exec(`sox ${filePathWAV} --channels=1 --bits=16 --rate=16000 ${filePathFLAC} --norm`, {async:false});
       //shell.exec(`sox maria.wav --channels=1 --bits=16 --rate=16000 maria.flac --norm`, {async:false})
@@ -74,8 +75,10 @@ ioAsServer.on('connection', function(socketAsServer){
         //fs.createReadStream('maria.flac').pipe(socketioStreamToTextServer);
         fs.createReadStream(filePathFLAC).pipe(socketioStreamToTextServer);
         // listen to the event that fires when text comes back from text server and store the transcribed text
-        socketAsClient.on('textserver-transcribebtext', (transcribedTextObj)=>{
+        socketAsClient.on('textserver-transcribebtext', (transcribedTextObj, aknFn)=>{
           var transcribebtext = transcribedTextObj.transcribedText;
+          // close the text-server text socket by calling the akn (aknowledge) function, see server code
+          aknFn(true);
           // store the transcribed text to a file
           fs.writeFile(filePathTXT, transcribebtext, (err) => {
             if (err) {
