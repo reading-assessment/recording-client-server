@@ -47,11 +47,11 @@ ioAsServer.on('connection', function(socketAsServer){
     var d = new Date();
     const filePrefix = objMetaData.studentName + 'TT' + d.getTime();
     const fileNameWAV = filePrefix + '.wav';
-    const filePathWAV = `.\\audio_files\\${fileNameWAV}`;
+    const filePathWAV = `./audio_files/${fileNameWAV}`;
     const fileNameFLAC = filePrefix + '.flac';
-    const filePathFLAC = `.\\audio_files\\${fileNameFLAC}`;
+    const filePathFLAC = `./audio_files/${fileNameFLAC}`;
     const fileNameTXT = filePrefix + '.txt';
-    const filePathTXT = `.\\transcribed_files\\${fileNameTXT}`;
+    const filePathTXT = `./transcribed_files/${fileNameTXT}`;
     //console.log(fileName);
     var writeStream = fs.createWriteStream(filePathWAV);
     stream.pipe(writeStream);
