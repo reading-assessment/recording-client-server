@@ -12,6 +12,16 @@
           display: block;
           margin-bottom: 10px;
         }
+        #div-red {
+          color:red;
+          font-size: 20px;
+          font-weight: bolder;
+        }
+        #div-finished-message {
+          color:green;
+          font-size:30px;
+          font-weight:bolder;
+        }
       </style>
       <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js"></script>
       <script src="socket.io-stream.js"></script>
@@ -24,7 +34,7 @@
     feedback!
   </p>
 
-  <input type="text" placeholder="name" required id="btnStudentName"/>
+  <input type="text" placeholder="student name" required id="btnStudentName"/>
 
   <!-- Draw the action buttons -->
   <button id="start-btn">Start recording</button>
@@ -34,6 +44,9 @@
   <h2>Stored Recordings</h2>
   <ul id="recordingslist"></ul>
   <progress value="0" max="100"></progress>
+  <div id="div-red">Please wait until finished message shows to close the browser!
+    <div id="div-finished-message"></div>
+  </div>
 
   <script>
     // Expose globally your audio_context, the recorder instance and audio_stream
@@ -69,6 +82,7 @@
     * It only stops when the method stopRecording is triggered.
     */
     function startRecording() {
+      document.getElementById('div-finished-message').innerHTML = '';
       var constraints = {audio:true, video:false};
       // Access the Microphone using the navigator.mediaDevices.getUserMedia method to obtain a stream, HMTL5
       navigator.mediaDevices.getUserMedia(constraints)
@@ -171,7 +185,7 @@
           // ss is socketio-stream globally available variable from imported file
           var socketioStream = ss.createStream();
           ss(socket).emit('client-stream-request', socketioStream, {
-            size: AudioBLOB.size,
+            wavFileSize: AudioBLOB.size,
             studentName : document.getElementById('btnStudentName').value
           });
           var blobStream = ss.createBlobReadStream(AudioBLOB);
@@ -184,6 +198,7 @@
           });
           socket.on('stream-server-ended', () =>{
             console.log('endddddd');
+            document.getElementById('div-finished-message').innerHTML = 'FINISHED :)'
             //socket.disconnect(URL_SERVER);
           });
           blobStream.pipe(socketioStream);
