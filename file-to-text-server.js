@@ -35,7 +35,7 @@ io.on('connection', function(socket){
   console.log('new connection');
   // socket.io-stream event listening from the client
   ss(socket).on('appserver-stream-request', function(stream, fileNameFLACObj){
-    const filePathFLAC = `.\\files_for_text\\${fileNameFLACObj.fileNameFLAC}`;
+    const filePathFLAC = `./files_for_text/${fileNameFLACObj.fileNameFLAC}`;
     // node filestream to save file on server filesystem
     console.log(filePathFLAC);
     var writeStream = fs.createWriteStream(filePathFLAC);
