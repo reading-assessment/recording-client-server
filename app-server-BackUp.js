@@ -1,41 +1,42 @@
-/******************         Node/Express Setup            ****************/
 var fs = require('fs');
-var express = require('express');
-var app = express();
-var cors = require('cors');
-var bodyParser = require("body-parser");
+// required if we are to run the server over hhtps
 var https = require('https');
+var express = require('express');
 // socket.io-stream for managein binary streams on client and server
 var ss = require('socket.io-stream');
 // shell for managing shell command lines, specifically for sox to convert audio to falc
 var shell = require('shelljs');
 // set the server as a client to send socket to the file to text server
-const URL_TEXT_SERVER = 'https://165.227.174.222:9006';
-// client side code for socket.io
+const URL_TEXT_SERVER = 'https://127.0.0.1:9006';
+// Connect to server
 var ioAsClient = require('socket.io-client');
+
+
+
+
+var app = express();
+
 //required key and cert for https, currently individual key from ioannis, there will be a browser warning for this
 var options = {
   key: fs.readFileSync('./thesis-selfsignedkey.pem'),
   cert: fs.readFileSync('./thesis-selfsignedcrt.pem')
 };
+
+// ---------------ARCHITECTURE---------------------
+// this server listens to requests from client and receives client wav file along with client metadata
+// for getting and sending the wav file it requires socketio-stream
+// it converts the wav file to flac and passes it to the file-to-text server
+// so it requires shell to run flac in the command line
+// it then gets back the transrcibed text
+
 var serverPort = 9005;
+
 var server = https.createServer(options, app);
 
-/*************************  Firebase Admin  **************************/
-var admin = require("firebase-admin");
-
-var serviceAccount = require("./key/benkyohr-e00dc-firebase-adminsdk-125v5-d1fdc86be0.json");
-
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-  databaseURL: "https://benkyohr-e00dc.firebaseio.com"
-});
-
-/*********************Firebase End*****************************/
-
-/***************Socketio connection code**********************/
 //socket.io requirement and initialization
 var ioAsServer = require('socket.io')(server);
+
+app.use(express.static(__dirname + '/public'));
 
 ioAsServer.on('connection', function(socketAsServer){
   
@@ -95,37 +96,6 @@ ioAsServer.on('connection', function(socketAsServer){
   });
 });
 
-/***************Socketio connection code end**********************/
-
-app.use(cors());
-app.use(bodyParser.json()); // <--- Here
-app.use(bodyParser.urlencoded({extended: true}));
-app.use(express.static('public'));
-// app.set('port', (process.env.PORT || 3000));
-// app.listen(app.get('port'), function() {
-//   console.log('Node app is running on port', app.get('port'));
-// });
-
-/************************** Importing Files/Fucntions ******************/
-var Users = require("./lib/user");
-var Assessments = require("./lib/assessments");
-var Classroom = require("./lib/classroom");
-var Students = require("./lib/student");
-
-/***************************** Routes ****************************/
-app.use("/", express.static(__dirname));
-app.get('/assessment/get', Assessments.getReleventAssessment)
-app.get('/assessment/update', Assessments.updateReleventAssessment)
-app.get('/assessment/getSortedData', Assessments.getAssessmentThroughSort)
-app.get('/assessment/pushData', Assessments.pushReleventAssessment)
-// app.get('/assessment/delete', Assessments.deleteReleventAssessment)
-
-
-app.all('/teacher/getToken', Classroom.getGoogleClassOAuthToken);
-app.all('/teacher/importClassroom', Classroom.getGoogleClassRoomData);
-
-/***************************** Student Routes ****************************/
-app.get('/student/sendData', Students.sendTranscribedAssessment);
 
 
 server.listen(serverPort, function(){
