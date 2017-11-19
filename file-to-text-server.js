@@ -8,7 +8,7 @@ var ss = require('socket.io-stream');
 var admin = require('firebase-admin');
 var Speech = require('@google-cloud/speech').SpeechClient;
 //console.log(Speech);
-var serviceAccount = require('./benkyohr-e00dc-firebase-adminsdk-125v5-d1fdc86be0.json');
+var serviceAccount = require('./key/benkyohr-e00dc-firebase-adminsdk-125v5-d1fdc86be0.json');
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
   storageBucket: "benkyohr-e00dc.appspot.com"
