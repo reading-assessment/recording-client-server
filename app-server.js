@@ -100,7 +100,8 @@ ioAsServer.on('connection', function(socketAsServer){
 app.use(cors());
 app.use(bodyParser.json()); // <--- Here
 app.use(bodyParser.urlencoded({extended: true}));
-app.use(express.static('public'));
+app.use(express.static(__dirname + '/public'));
+app.use(express.static(__dirname + '/transcribed_files'));
 // app.set('port', (process.env.PORT || 3000));
 // app.listen(app.get('port'), function() {
 //   console.log('Node app is running on port', app.get('port'));
