@@ -21,6 +21,13 @@ var options = {
 var serverPort = 9005;
 var server = https.createServer(options, app);
 
+// ---------------ARCHITECTURE---------------------
+// this server listens to requests from client and receives client wav file along with client metadata
+// for getting and sending the wav file it requires socketio-stream
+// it converts the wav file to flac and passes it to the file-to-text server
+// so it requires shell to run flac in the command line
+// it then gets back the transrcibed text
+
 /*************************  Firebase Admin  **************************/
 var admin = require("firebase-admin");
 
